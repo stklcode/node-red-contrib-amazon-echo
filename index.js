@@ -18,7 +18,7 @@ module.exports = function(RED) {
 
       var nodeDeviceId = formatUUID(config.id);
 
-      if (nodeDeviceId == msg.deviceid) {
+      if (nodeDeviceId === msg.deviceid) {
         msg.topic = config.topic;
         deviceNode.send(msg);
       }
@@ -56,7 +56,6 @@ module.exports = function(RED) {
         text: 'Unable to start on port ' + port
       });
       RED.log.error(error);
-      return;
     });
 
     httpServer.listen(port, function(error) {
@@ -96,7 +95,7 @@ module.exports = function(RED) {
 
           if ('nodename' in msg.payload && msg.payload.nodename !== null) {
             getDevices().forEach(function(device) {
-              if (msg.payload.nodename == device.name) {
+              if (msg.payload.nodename === device.name) {
                 nodeDeviceId = device.id;
                 delete msg.payload['nodename'];
               }
@@ -122,7 +121,7 @@ module.exports = function(RED) {
         // Output if
         // 'Process and output' OR
         // 'Process and output on state change' option is selected
-        if (config.processinput == 2 || (config.processinput == 3 && Object.keys(deviceAttributes.meta.changes).length > 0)) {
+        if (config.processinput === 2 || (config.processinput === 3 && Object.keys(deviceAttributes.meta.changes).length > 0)) {
           payloadHandler(hubNode, msg.payload.deviceid);
         }
 
@@ -227,7 +226,7 @@ module.exports = function(RED) {
         }
       });
       const output = {
-          lights: lights
+        lights: lights
       };
 
       res.json(output);
@@ -439,7 +438,7 @@ module.exports = function(RED) {
     var current = {};
 
     // Set defaults
-    for (var key in saved) {
+    for (let key in saved) {
       current[key] = valueOrDefault(attributes[key], saved[key]);
     }
 
@@ -448,21 +447,26 @@ module.exports = function(RED) {
       current.colormode = 'ct';
     }
 
+    let hueColor;
+    let hsb;
+    let cie;
+    let rgb;
+
     // Set Hue color
     if (attributes.hue !== undefined && attributes.sat !== undefined) {
-      var hueColor = HueColor.fromHsb(current.hue, current.sat, current.bri);
-      var cie = hueColor.toCie();
-      var rgb = hueColor.toRgb();
+      hueColor = HueColor.fromHsb(current.hue, current.sat, current.bri);
+      cie = hueColor.toCie();
+      rgb = hueColor.toRgb();
       current.xy = [cie[0] || 0, cie[1] || 0];
       current.rgb = rgb;
       current.colormode = 'hs';
     }
 
     // Set CIE
-    if (attributes.xy !== undefined && Array.isArray(attributes.xy) && attributes.xy.length == 2) {
-      var hueColor = HueColor.fromCIE(current.xy[0], current.xy[1], current.bri);
-      var hsb = hueColor.toHsb();
-      var rgb = hueColor.toRgb();
+    if (attributes.xy !== undefined && Array.isArray(attributes.xy) && attributes.xy.length === 2) {
+      hueColor = HueColor.fromCIE(current.xy[0], current.xy[1], current.bri);
+      hsb = hueColor.toHsb();
+      rgb = hueColor.toRgb();
       current.hue = hsb[0] || 0;
       current.sat = hsb[1] || 0;
       current.rgb = rgb;
@@ -470,10 +474,10 @@ module.exports = function(RED) {
     }
 
     // Set RGB
-    if (attributes.rgb !== undefined && Array.isArray(attributes.rgb) && attributes.rgb.length == 3) {
-      var hueColor = HueColor.fromRgb(current.rgb[0], current.rgb[1], current.rgb[2]);
-      var hsb = hueColor.toHsb();
-      var cie = hueColor.toCie();
+    if (attributes.rgb !== undefined && Array.isArray(attributes.rgb) && attributes.rgb.length === 3) {
+      hueColor = HueColor.fromRgb(current.rgb[0], current.rgb[1], current.rgb[2]);
+      hsb = hueColor.toHsb();
+      cie = hueColor.toCie();
       current.hue = hsb[0] || 0;
       current.sat = hsb[1] || 0;
       current.bri = hsb[2] || 0;
@@ -485,7 +489,7 @@ module.exports = function(RED) {
     current.percentage = Math.floor(current.bri / 253 * 100);
 
     // Populate meta.changes
-    for (var key in saved) {
+    for (let key in saved) {
       if (JSON.stringify(saved[key]) !== JSON.stringify(current[key])) {
         meta['changes'][key] = saved[key];
       }
