@@ -29,11 +29,14 @@
   },
   "dependencies": {
     "ip": "^1.1.5",
-    "node-persist": "^3.0.2",
+    "node-persist": "^3.0.5",
     "node-ssdp": "^4.0.0",
-    "stoppable": "^1.0.4",
-    "express": "^4.16.4",
-    "body-parser": "^1.18.3",
+    "stoppable": "^1.1.0",
+    "express": "^4.17.1",
+    "body-parser": "^1.19.0",
     "hue-colors": "^0.5.2"
+  },
+  "devDependencies": {
+    "eslint": "^6"
   }
 }
