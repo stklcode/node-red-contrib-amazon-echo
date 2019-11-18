@@ -12,6 +12,6 @@ module.exports = class Registration extends Array {
       success: {
         username: username
       }
-    })
+    });
   }
 };

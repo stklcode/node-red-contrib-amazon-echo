@@ -1,10 +1,10 @@
 <script type="text/javascript">
   RED.nodes.registerType('amazon-echo-hub', {
-    category: "input",
-    color: "#31C4F3",
+    category: 'input',
+    color: '#31C4F3',
     defaults: {
       port: {
-        value: "80",
+        value: '80',
         required: true,
         validate: function(port) {
           return port > 0 && port < 65536;
@@ -19,9 +19,9 @@
     },
     inputs: 1,
     outputs: 1,
-    icon: "amazon-echo-hub.png",
+    icon: 'amazon-echo-hub.png',
     label: function() {
-      return "Amazon Echo Hub";
+      return 'Amazon Echo Hub';
     }
   });
 </script>
@@ -162,11 +162,11 @@
 
 <script type="text/javascript">
   RED.nodes.registerType('amazon-echo-device', {
-    category: "input",
-    color: "#31C4F3",
+    category: 'input',
+    color: '#31C4F3',
     defaults: {
       name: {
-        value: "",
+        value: '',
         required: true
       },
       devtype: {
@@ -174,15 +174,15 @@
         required: true
       },
       topic: {
-        value: "",
+        value: '',
         required: false
       },
     },
     inputs: 1,
     outputs: 1,
-    icon: "amazon-echo-device.png",
+    icon: 'amazon-echo-device.png',
     label: function() {
-      return this.name || "Amazon Echo Device";
+      return this.name || 'Amazon Echo Device';
     }
   });
 </script>

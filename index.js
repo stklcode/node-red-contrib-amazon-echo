@@ -89,7 +89,7 @@ module.exports = function(RED) {
 
         if ('nodeid' in msg.payload && msg.payload.nodeid !== null) {
 
-          nodeDeviceId = msg.payload.nodeid
+          nodeDeviceId = msg.payload.nodeid;
           delete msg.payload['nodeid'];
 
         } else {
@@ -97,7 +97,7 @@ module.exports = function(RED) {
           if ('nodename' in msg.payload && msg.payload.nodename !== null) {
             getDevices().forEach(function(device) {
               if (msg.payload.nodename == device.name) {
-                nodeDeviceId = device.id
+                nodeDeviceId = device.id;
                 delete msg.payload['nodename'];
               }
             });
@@ -115,7 +115,7 @@ module.exports = function(RED) {
             by: 'input',
             details: {}
           }
-        }
+        };
 
         var deviceAttributes = setDeviceAttributes(msg.payload.deviceid, msg.payload, meta, hubNode.context());
 
@@ -200,12 +200,12 @@ module.exports = function(RED) {
       const lights = getDevicesAttributes(hubNode.context()).map(d => {
         const state = new State(d.on, d.bri, d.hue, d.sat, d.ct, d.colormode);
         switch (d.devtype) {
-          case '1': // Color Temperature Light.
-            return Info.forCT(d.name, state).extended().withCapabilities(Capabilities.forCT());
-          case '2': // Dimmable light.
-            return Info.forDimmable(d.name, state).extended().withCapabilities(Capabilities.forDimmable());
-          default: // Extended Color Light (default).
-            return Info.forRGBW(d.name, state).extended().withCapabilities(Capabilities.forRGBW());
+        case '1': // Color Temperature Light.
+          return Info.forCT(d.name, state).extended().withCapabilities(Capabilities.forCT());
+        case '2': // Dimmable light.
+          return Info.forDimmable(d.name, state).extended().withCapabilities(Capabilities.forDimmable());
+        default: // Extended Color Light (default).
+          return Info.forRGBW(d.name, state).extended().withCapabilities(Capabilities.forRGBW());
         }
       });
 
@@ -218,12 +218,12 @@ module.exports = function(RED) {
       const lights = getDevicesAttributes(hubNode.context()).map(d => {
         const state = new State(d.on, d.bri, d.hue, d.sat, d.ct, d.colormode);
         switch (d.devtype) {
-          case '1': // Color Temperature Light.
-            return Info.forCT(d.name, state).extended().withCapabilities(Capabilities.forCT());
-          case '2': // Dimmable light.
-            return Info.forDimmable(d.name, state).extended().withCapabilities(Capabilities.forDimmable());
-          default: // Extended Color Light (default).
-            return Info.forRGBW(d.name, state).extended().withCapabilities(Capabilities.forRGBW());
+        case '1': // Color Temperature Light.
+          return Info.forCT(d.name, state).extended().withCapabilities(Capabilities.forCT());
+        case '2': // Dimmable light.
+          return Info.forDimmable(d.name, state).extended().withCapabilities(Capabilities.forDimmable());
+        default: // Extended Color Light (default).
+          return Info.forRGBW(d.name, state).extended().withCapabilities(Capabilities.forRGBW());
         }
       });
       const output = {
@@ -241,14 +241,14 @@ module.exports = function(RED) {
 
       var info;
       switch (device.devtype) {
-        case '1': // Color Temperature Light.
-          info = Info.forCT(device.name, state);
-          break;
-        case '2': // Dimmable light.
-          info = Info.forDimmable(device.name, state);
-          break;
-        default: // Extended Color Light (default).
-          info = Info.forRGBW(device.name, state);
+      case '1': // Color Temperature Light.
+        info = Info.forCT(device.name, state);
+        break;
+      case '2': // Dimmable light.
+        info = Info.forDimmable(device.name, state);
+        break;
+      default: // Extended Color Light (default).
+        info = Info.forRGBW(device.name, state);
       }
 
       res.json(info);
@@ -278,30 +278,30 @@ module.exports = function(RED) {
       output.success('bri', data.bri);
 
       switch (device.devtype) {
-        case '1':   // Color Temperature Light.
-          output.success('ct', data.ct);
-          if (req.body.hasOwnProperty('hue')) {
-            output.error('hue', data.hue);
-          }
-          if (req.body.hasOwnProperty('sat')) {
-            output.error('sat', data.sat);
-          }
-          break;
-        case '2': // Dimmable light.
-          if (req.body.hasOwnProperty('ct')) {
-            output.error('ct', data.ct);
-          }
-          if (req.body.hasOwnProperty('hue')) {
-            output.error('hue', data.hue);
-          }
-          if (req.body.hasOwnProperty('sat')) {
-            output.error('sat', data.sat);
-          }
-          break;
-        default: // Extended Color Light (default).
-          output.success('ct', data.ct);
-          output.success('hue', data.hue);
-          output.success('sat', data.sat);
+      case '1':   // Color Temperature Light.
+        output.success('ct', data.ct);
+        if ('hue' in req.body) {
+          output.error('hue', data.hue);
+        }
+        if ('sat' in req.body) {
+          output.error('sat', data.sat);
+        }
+        break;
+      case '2': // Dimmable light.
+        if ('ct' in req.body) {
+          output.error('ct', data.ct);
+        }
+        if ('hue' in req.body) {
+          output.error('hue', data.hue);
+        }
+        if ('sat' in req.body) {
+          output.error('sat', data.sat);
+        }
+        break;
+      default: // Extended Color Light (default).
+        output.success('ct', data.ct);
+        output.success('hue', data.hue);
+        output.success('sat', data.sat);
       }
 
       res.json(output);
@@ -323,7 +323,7 @@ module.exports = function(RED) {
           path: '/description.xml'
         },
         udn: 'uuid:' + getHueHubId(config)
-      })
+      });
 
     server.addUSN('upnp:rootdevice');
     server.addUSN('urn:schemas-upnp-org:device:basic:1');
@@ -477,7 +477,7 @@ module.exports = function(RED) {
       current.hue = hsb[0] || 0;
       current.sat = hsb[1] || 0;
       current.bri = hsb[2] || 0;
-      current.xy = [cie[0] || 0, cie[1] || 0]
+      current.xy = [cie[0] || 0, cie[1] || 0];
       current.colormode = 'hs';
     }
 
@@ -515,4 +515,4 @@ module.exports = function(RED) {
     hubNode.send(msg);
   }
 
-}
+};
