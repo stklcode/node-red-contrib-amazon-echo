@@ -28,6 +28,16 @@ module.exports = class State {
   }
 
   /**
+   * Create State object for on/off, fixed color light.
+   *
+   * @param {boolean} on  On/Off state.
+   * @returns {State}
+   */
+  static forOnOff(on) {
+    return new State(on, null, null, null, null, null);
+  }
+
+  /**
    * Create State object for dimmable, fixed color light.
    *
    * @param {boolean} on  On/Off state.
@@ -35,7 +45,7 @@ module.exports = class State {
    * @returns {State}
    */
   static forDimmable(on, bri) {
-    return new State(on, bri, null, null, null, 'ct');
+    return new State(on, bri, null, null, null, null);
   }
 
   /**

@@ -170,7 +170,11 @@
         required: true
       },
       devtype: {
-        value: 0,
+        value: "light",
+        required: true
+      },
+      devmodel: {
+        value: "ext",
         required: true
       },
       topic: {
@@ -197,9 +201,17 @@
     <div class="form-row">
         <label for="node-input-devtype"><i class="fa fa-tag"></i> Device Type</label>
         <select class="form-control" id="node-input-devtype">
-          <option value="0">Light (Extended Color)</option>
-          <option value="1">Light (Color Temperature)</option>
-          <option value="2">Light (Dimmable)</option>
+          <option value="light">Light</option>
+          <option value="sensor">Sensor</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-devmodel"><i class="fa fa-tag"></i> Model</label>
+        <select class="form-control" id="node-input-devmodel">
+          <option value="ext">Extended Color</option>
+          <option value="ct">Color Temperature</option>
+          <option value="dim">Dimmable</option>
+          <option value="onoff">On/Off</option>
         </select>
     </div>
     <div class="form-row">

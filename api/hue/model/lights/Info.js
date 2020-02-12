@@ -92,4 +92,16 @@ module.exports = class Info {
   static forDimmable(uid, name, state) {
     return new Info(uid, name, state, 'Dimmable Light', 'LWB007', '66012040');
   }
+
+  /**
+   * Create Info object for an on/off, fixed color light.
+   *
+   * @param {string} name  Device name.
+   * @param {State}  state State information
+   * @returns {Info} Info object.
+   * @constructor
+   */
+  static forOnOff(name, state) {
+    return new Info(name, state, 'On/Off Light', 'AB3257001NJ', '1.04.12');
+  }
 };

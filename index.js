@@ -197,69 +197,108 @@ module.exports = function(RED) {
     });
 
     app.get('/api/:username', function(req, res) {
-      const lights = getDevicesAttributes(hubNode.context()).reduce((l, d) => {
+      const lights = [];
+      const sensors = [];
+
+      getDevicesAttributes(hubNode.context()).forEach(d => {
         const uid = hueUniqueId(d.id);
-        const state = new State(d.on, d.bri, d.hue, d.sat, d.ct, d.colormode);
         switch (d.devtype) {
-          case '1': // Color Temperature Light.
-            l[d.id] = Info.forCT(d.name, state).extended(uid).withCapabilities(Capabilities.forCT());
+          case 'light':
+            const state = new State(d.on, d.bri, d.hue, d.sat, d.ct, d.colormode);
+            switch (d.model) {
+              case 'ext': // Extended Color Light.
+                lights[d.id] = Info.forRGBW(d.name, state).extended(uid).withCapabilities(Capabilities.forRGBW());
+                break;
+              case 'ct': // Color Temperature Light.
+                lights[d.id] = Info.forCT(d.name, state).extended(uid).withCapabilities(Capabilities.forCT());
+                break;
+              case 'dim': // Dimmable light.
+                lights[d.id] = Info.forDimmable(d.name, state).extended(uid).withCapabilities(Capabilities.forDimmable());
+                break;
+              case 'onoff': // On/off light.
+                lights[d.id] = Info.forOnOff(d.name, state).extended(uid).withCapabilities(Capabilities.forDimmable());
+                break;
+              default:
+                // TODO: error for unsupported model
+            }
             break;
-          case '2': // Dimmable light.
-            l[d.id] = Info.forDimmable(d.name, state).extended(uid).withCapabilities(Capabilities.forDimmable());
+          case 'sensor':
+            switch (d.model) {
+              // TODO: add sensor models.
+              default:
+                // TODO: error for unsupported model
+            }
             break;
-          default: // Extended Color Light (default).
-            l[d.id] = Info.forRGBW(d.name, state).extended(uid).withCapabilities(Capabilities.forRGBW());
+          default:
+          // TODO: error for unsupported device type
         }
         return l;
       }, {});
 
-      const output = new GlobalState(req.hostname, req.params.username).withLights(lights);
+      const output = new GlobalState(req.hostname, req.params.username)
+        .withLights(lights)
+        .withSensors(sensors);
 
       res.json(output);
     });
 
     app.get('/api/:username/lights', function(req, res) {
-      const output = getDevicesAttributes(hubNode.context()).reduce((lights, d) => {
-        const uid = hueUniqueId(d.id);
-        const state = new State(d.on, d.bri, d.hue, d.sat, d.ct, d.colormode);
-        switch (d.devtype) {
-          case '1': // Color Temperature Light.
-            lights[d.id] = Info.forCT(d.name, state).extended(uid).withCapabilities(Capabilities.forCT());
-            break;
-          case '2': // Dimmable light.
-            lights[d.id] = Info.forDimmable(d.name, state).extended(uid).withCapabilities(Capabilities.forDimmable());
-            break;
-          default: // Extended Color Light (default).
-            lights[d.id] = Info.forRGBW(d.name, state).extended(uid).withCapabilities(Capabilities.forRGBW());
-        }
-        return lights;
-      }, {});
+      const output = getDevicesAttributes(hubNode.context())
+        .filter(d => 'light' === d.devtype)
+        .reduce((lights, d) => {
+          const uid = hueUniqueId(d.id);
+          const state = new State(d.on, d.bri, d.hue, d.sat, d.ct, d.colormode);
+          switch (d.model) {
+            case 'ext': // Extended Color Light.
+              lights[d.id] = Info.forRGBW(d.name, state).extended(uid).withCapabilities(Capabilities.forRGBW());
+              break;
+            case 'ct': // Color Temperature Light.
+              lights[d.id] = Info.forCT(d.name, state).extended(uid).withCapabilities(Capabilities.forCT());
+              break;
+            case 'dim': // Dimmable light.
+              lights[d.id] = Info.forDimmable(d.name, state).extended(uid).withCapabilities(Capabilities.forDimmable());
+              break;
+            default: // Extended Color Light (default).
+              // TODO: error for unsupported model
+          }
+          return lights;
+        }, {});
 
       res.json(output);
     });
 
-    app.get('/api/:username/lights/:id', function(req, res) {
+    app.get('/api/:username/lights/:id', function (req, res) {
       var device = getDevice(req.params.id);
 
       var data = getDeviceAttributes(req.params.id, hubNode.context());
       var state = new State(data.on, data.bri, data.hue, data.sat, data.ct, data.colormode);
 
       var info;
-      switch (device.devtype) {
-        case '1': // Color Temperature Light.
-          info = Info.forCT(device.name, state);
-          break;
-        case '2': // Dimmable light.
-          info = Info.forDimmable(device.name, state);
-          break;
-        default: // Extended Color Light (default).
-          info = Info.forRGBW(device.name, state);
+      if ('light' === device.devtype) {
+        switch (device.model) {
+          case 'ext': // Extended Color Light.
+            info = Info.forRGBW(device.name, state);
+            break;
+          case 'ct': // Color Temperature Light.
+            info = Info.forCT(device.name, state);
+            break;
+          case 'dim': // Dimmable light.
+            info = Info.forDimmable(device.name, state);
+            break;
+          case 'onoff': // On/off light.
+            info = Info.forOnOff(device.name, state);
+            break;
+          default:
+            // TODO: error for unsupported model
+        }
+      } else {
+        // TODO: error for unsupported device type
       }
 
       res.json(info);
     });
 
-    app.put('/api/:username/lights/:id/state', function(req, res) {
+    app.put('/api/:username/lights/:id/state', function (req, res) {
 
       const meta = {
         insert: {
@@ -278,35 +317,60 @@ module.exports = function(RED) {
 
       var device = getDevice(req.params.id);
 
-      const output = new SetResponse();
-      output.success('on', data.on);
-      output.success('bri', data.bri);
+      let output;
 
-      switch (device.devtype) {
-        case '1':   // Color Temperature Light.
-          output.success('ct', data.ct);
-          if (req.body.hasOwnProperty('hue')) {
-            output.error('hue', data.hue);
-          }
-          if (req.body.hasOwnProperty('sat')) {
-            output.error('sat', data.sat);
-          }
-          break;
-        case '2': // Dimmable light.
-          if (req.body.hasOwnProperty('ct')) {
-            output.error('ct', data.ct);
-          }
-          if (req.body.hasOwnProperty('hue')) {
-            output.error('hue', data.hue);
-          }
-          if (req.body.hasOwnProperty('sat')) {
-            output.error('sat', data.sat);
-          }
-          break;
-        default: // Extended Color Light (default).
-          output.success('ct', data.ct);
-          output.success('hue', data.hue);
-          output.success('sat', data.sat);
+      if (device.devtype === 'light') {
+        output = new SetResponse();
+        output.success('on', data.on);
+
+        switch (device.model) {
+          case 'ext': // Extended Color Light.
+            output.success('bri', data.bri);
+            output.success('ct', data.ct);
+            output.success('hue', data.hue);
+            output.success('sat', data.sat);
+            break;
+          case 'ct':   // Color Temperature Light.
+            output.success('ct', data.ct);
+            output.success('bri', data.bri);
+            if (req.body.hasOwnProperty('hue')) {
+              output.error('hue', data.hue);
+            }
+            if (req.body.hasOwnProperty('sat')) {
+              output.error('sat', data.sat);
+            }
+            break;
+          case 'dim': // Dimmable light.
+            output.success('bri', data.bri);
+            if (req.body.hasOwnProperty('ct')) {
+              output.error('ct', data.ct);
+            }
+            if (req.body.hasOwnProperty('hue')) {
+              output.error('hue', data.hue);
+            }
+            if (req.body.hasOwnProperty('sat')) {
+              output.error('sat', data.sat);
+            }
+            break;
+          case 'onoff': // On/Off light.
+            if (req.body.hasOwnProperty('bri')) {
+              output.error('bri', data.bri);
+            }
+            if (req.body.hasOwnProperty('ct')) {
+              output.error('ct', data.ct);
+            }
+            if (req.body.hasOwnProperty('hue')) {
+              output.error('hue', data.hue);
+            }
+            if (req.body.hasOwnProperty('sat')) {
+              output.error('sat', data.sat);
+            }
+            break;
+          default:
+            // TODO: error for unsupported model
+        }
+      } else {
+        // TODO: error for unsupported device type
       }
 
       res.json(output);
@@ -328,7 +392,7 @@ module.exports = function(RED) {
           path: '/description.xml'
         },
         udn: 'uuid:' + getHueHubId(config)
-      })
+      });
 
     server.addUSN('upnp:rootdevice');
     server.addUSN('urn:schemas-upnp-org:device:basic:1');
@@ -389,7 +453,8 @@ module.exports = function(RED) {
           id: formatUUID(node.id),
           name: node.name,
           type: node.type,
-          devtype: node.devtype
+          devtype: node.devtype,
+          model: node.devmodel
         });
       }
     });

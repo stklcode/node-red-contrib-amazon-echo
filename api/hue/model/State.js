@@ -13,6 +13,7 @@ module.exports = class State {
     const date = new Date().toISOString().split('.').shift();
 
     this.lights = {};
+    this.sensors = {};
     this.groups = {};
     this.schedules = {};
     this.config = {
@@ -65,6 +66,17 @@ module.exports = class State {
    */
   withLights(lights) {
     this.lights = lights;
+    return this;
+  }
+
+  /**
+   * Add sensor information.
+   *
+   * @param {Array} sensors
+   * @returns {State}
+   */
+  withLights(sensors) {
+    this.sensors = sensors;
     return this;
   }
 };
